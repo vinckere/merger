@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="519f7ea7-1703-4130-bdf9-98e13bdd5a9e" name="Changes" comment="">
+    <list default="true" id="519f7ea7-1703-4130-bdf9-98e13bdd5a9e" name="Changes" comment="First try with 1 file">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
     </list>
@@ -23,6 +23,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "vinckere"
+  }
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/vinckere/merger",
+    "accountId": "8ec7edca-95f9-4f9d-97f0-aa63896a2cb5"
+  }
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
 }</component>
@@ -61,11 +73,33 @@
       <option name="presentableId" value="Default" />
       <updated>1746800103054</updated>
       <workItem from="1746800104100" duration="3273000" />
-      <workItem from="1749303721548" duration="1147000" />
+      <workItem from="1749303721548" duration="4993000" />
     </task>
+    <task id="LOCAL-00001" summary="Try before serious">
+      <option name="closed" value="true" />
+      <created>1749304886677</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1749304886677</updated>
+    </task>
+    <task id="LOCAL-00002" summary="First try with 1 file">
+      <option name="closed" value="true" />
+      <created>1749305051640</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1749305051640</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Try before serious" />
+    <MESSAGE value="First try with 1 file" />
+    <option name="LAST_COMMIT_MESSAGE" value="First try with 1 file" />
   </component>
 </project>

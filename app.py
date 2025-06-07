@@ -1,32 +1,93 @@
 import streamlit as st
 import pandas as pd
 
+def detect_store_column(df):
+    """Detects the store name column using 'brest' or 'tours' in values"""
+    for col in df.columns:
+        if df[col].astype(str).str.contains("brest|tours", case=False).any():
+            return col
+    raise ValueError("Store column not found")
+
 def extract_audio_ca(df):
-    """Extracts store name and CA Encaissé Audio, rounds CA"""
-    store_col = next(col for col in df.columns if df[col].astype(str).str.contains("brest|tours", case=False).any())
-    result = df[[store_col, "CA EncaissÈ Audio"]].copy()
-    result.columns = ["Store", "CA Audio"]
-    result["CA Audio"] = result["CA Audio"].round().astype(int)
-    return result
+    store_col = detect_store_column(df)
+    df = df[[store_col, "CA Encaissé Audio"]].copy()
+    df.columns = ["MAGASIN", "CA Audio"]
+    df["CA Audio"] = df["CA Audio"].round().astype(int)
+    df = df.iloc[:-1]
+    return df
+
+def extract_objectifs(df, reference_stores):
+    store_col = detect_store_column(df)
+    df = df[[store_col, "Objectif (du Mois)"]].copy()
+    df.rename(columns={store_col: "MAGASIN", "Objectif (du Mois)": "OBJECTIF Mensuel"}, inplace=True)
+    df["OBJECTIF Mensuel"] = (df["OBJECTIF Mensuel"] * 1000).astype(int)
+
+    df = df.iloc[:-1]
+
+    current_stores = set(df["MAGASIN"].str.lower().str.strip())
+    reference_set = set(reference_stores.str.lower().str.strip())
+    st.error(f"Missing: {reference_set - current_stores}, Extra: {current_stores - reference_set}")
+
+    if current_stores != reference_set:
+        raise ValueError("Store mismatch between files")
+    return df
 
 def save_to_excel(df):
-    """Convert DataFrame to Excel in memory"""
     from io import BytesIO
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment
+
+    df = df.rename(columns={"CA Audio": "CA Audio généré "})
     output = BytesIO()
-    df.to_excel(output, index=False)
+    wb = Workbook()
+    ws = wb.active
+
+    ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=11)
+    title_cell = ws.cell(row=1, column=1, value="STATISTIQUES OPTIQUES ...  AU ...")
+    title_cell.font = Font(size=24, bold=True)
+    title_cell.fill = PatternFill("solid", fgColor="BDD7EE")
+    title_cell.alignment = Alignment(horizontal="center")
+
+    for col_num, col_name in enumerate(df.columns, start=1):
+        cell = ws.cell(row=2, column=col_num, value=col_name)
+        cell.fill = PatternFill("solid", fgColor="D9E1F2")
+        cell.font = Font(size=16)
+
+    for row_idx, row in enumerate(df.itertuples(index=False), start=3):
+        for col_idx, value in enumerate(row, start=1):
+            cell = ws.cell(row=row_idx, column=col_idx, value=value)
+            cell.font = Font(size=16)
+
+    wb.save(output)
     output.seek(0)
     return output
 
-st.title("Extract CA Audio")
+st.title("Upload 2 CSV files")
 
-uploaded_file = st.file_uploader("Upload 1 CSV file", type="csv")
-
-if uploaded_file:
-    df = pd.read_csv(uploaded_file)
+files = st.file_uploader(
+    "Upload the files in this order:\n1️⃣ synthèse CA audio...\n2️⃣ Positionnement_Mois...",
+    type="csv",
+    accept_multiple_files=True
+)
+if files and len(files) == 2:
     try:
-        cleaned_df = extract_audio_ca(df)
-        st.write(cleaned_df)
-        excel_file = save_to_excel(cleaned_df)
-        st.download_button("Download Excel", excel_file, "output_audio_ca.xlsx")
+        audio_df = pd.read_csv(files[0], encoding="latin1", skiprows=2, sep=";")
+        objectifs_df = pd.read_csv(files[1], encoding="latin1", skiprows=2, sep=";")
+
+        st.write("Preview for store detection:", objectifs_df.head())
+
+        st.write("Audio columns:", audio_df.columns.tolist())
+        st.write("Objectifs columns:", objectifs_df.columns.tolist())
+
+        audio_data = extract_audio_ca(audio_df)
+        objectifs_data = extract_objectifs(objectifs_df, audio_data["MAGASIN"])
+
+        merged = pd.merge(audio_data, objectifs_data, on="MAGASIN")
+        st.write(merged)
+
+        excel_file = save_to_excel(merged)
+        st.download_button("Download Excel", excel_file, "CHIFFRES DU XX AU XX.xlsx")
     except Exception as e:
-        st.error(f"Error processing file: {e}")
+        st.error(f"Error: {e}")
+else:
+    st.warning("Please upload exactly 2 CSV files.")
