@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import unicodedata
+from openpyxl.utils import get_column_letter
 
 
 
@@ -60,7 +61,7 @@ def save_to_excel(df):
     ws = wb.active
 
     ws.merge_cells(start_row=1, start_column=1, end_row=1, end_column=11)
-    title_cell = ws.cell(row=1, column=1, value="STATISTIQUES OPTIQUES ...  AU ...")
+    title_cell = ws.cell(row=1, column=1, value="STATISTIQUES OPTIQUES DU ...  AU ...")
     title_cell.font = Font(size=24, bold=True)
     title_cell.fill = PatternFill("solid", fgColor="BDD7EE")
     title_cell.alignment = Alignment(horizontal="center")
@@ -74,6 +75,15 @@ def save_to_excel(df):
         for col_idx, value in enumerate(row, start=1):
             cell = ws.cell(row=row_idx, column=col_idx, value=value)
             cell.font = Font(size=16)
+
+    #Adjust row width
+    for i, column_cells in enumerate(ws.iter_cols(min_row=2), start=1):
+        length = max(len(str(cell.value)) if cell.value is not None else 0 for cell in column_cells)
+        ws.column_dimensions[get_column_letter(i)].width = length + 6
+
+    # Adjust row height
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+        ws.row_dimensions[row[0].row].height = 28
 
     wb.save(output)
     output.seek(0)
