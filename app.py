@@ -1,5 +1,12 @@
 import streamlit as st
 import pandas as pd
+import unicodedata
+
+
+
+def normalize_colname(col):
+    """Normalize accented characters (e.g. È → é)"""
+    return unicodedata.normalize("NFKD", col).encode("ascii", "ignore").decode().lower()
 
 def detect_store_column(df):
     """Detects the store name column using 'brest' or 'tours' in values"""
@@ -18,19 +25,29 @@ def extract_audio_ca(df):
 
 def extract_objectifs(df, reference_stores):
     store_col = detect_store_column(df)
-    df = df[[store_col, "Objectif (du Mois)"]].copy()
-    df.rename(columns={store_col: "MAGASIN", "Objectif (du Mois)": "OBJECTIF Mensuel"}, inplace=True)
+
+    # Normalize columns for matching
+    normalized_cols = {normalize_colname(c): c for c in df.columns}
+    ca_col = normalized_cols["ca genere (factures - avoirs)"]
+    objectif_col = normalized_cols["objectif (du mois)"]
+
+    df = df[[store_col, objectif_col, ca_col]].copy()
+    df.rename(columns={
+        store_col: "MAGASIN",
+        objectif_col: "OBJECTIF Mensuel",
+        ca_col: "CA Mensuel Généré"
+    }, inplace=True)
+
     df["OBJECTIF Mensuel"] = (df["OBJECTIF Mensuel"] * 1000).astype(int)
+    df["CA Mensuel Généré"] = (df["CA Mensuel Généré"].str.replace(",", ".").astype(float) * 1000)
 
-    df = df.iloc[:-1]
-
+    df = df.iloc[:-1]  # remove total line
     current_stores = set(df["MAGASIN"].str.lower().str.strip())
     reference_set = set(reference_stores.str.lower().str.strip())
-    st.error(f"Missing: {reference_set - current_stores}, Extra: {current_stores - reference_set}")
-
     if current_stores != reference_set:
         raise ValueError("Store mismatch between files")
     return df
+
 
 def save_to_excel(df):
     from io import BytesIO
@@ -72,7 +89,7 @@ files = st.file_uploader(
 if files and len(files) == 2:
     try:
         audio_df = pd.read_csv(files[0], encoding="latin1", skiprows=2, sep=";")
-        objectifs_df = pd.read_csv(files[1], encoding="latin1", skiprows=2, sep=";")
+        objectifs_df = pd.read_csv(files[1], encoding="latin1", skiprows=2, sep=";", decimal=",")
 
         st.write("Preview for store detection:", objectifs_df.head())
 
