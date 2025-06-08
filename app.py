@@ -51,10 +51,13 @@ def extract_objectifs(df, reference_stores):
 
 def extract_optique_stats(df, reference_stores):
     store_col = detect_store_column(df)
-    df = df[[store_col, "Nb Vente Opt", "Panier Moyen"]].copy()
+    df = df[[store_col, "Nb Vente Opt", "Panier Moyen", "% Garantie"]].copy()
+
     df.rename(columns={store_col: "MAGASIN"}, inplace=True)
     df["NB devis validés \n/ Panier moyen 450"] = df["Nb Vente Opt"].astype(float).round().astype(int).astype(str) + "/"  + df["Panier Moyen"].astype(float).round().astype(int).astype(str)
-    df = df[["MAGASIN", "NB devis validés \n/ Panier moyen 450"]]
+    df["% SOP 45%"] = df["% Garantie"].astype(float).round().astype(int)
+    df = df[["MAGASIN", "NB devis validés \n/ Panier moyen 450", "% SOP 45%"]]
+
     df = df.iloc[:-1]  # remove total row
 
     current = set(df["MAGASIN"].str.lower().str.strip())
@@ -105,6 +108,15 @@ def save_to_excel(df):
     for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
         ws.row_dimensions[row[0].row].height = 28
 
+    for row in ws.iter_rows(min_row=3, max_row=ws.max_row):
+        for cell in row:
+            # Check if it's the SOP column
+            if cell.column_letter == "F" and isinstance(cell.value, int):
+                if cell.value < 45:
+                    cell.font = Font(size=16, color="FF0000")  # red
+                else:
+                    cell.font = Font(size=16, color="0070C0")  # blue
+
     wb.save(output)
     output.seek(0)
     return output
@@ -112,7 +124,7 @@ def save_to_excel(df):
 st.title("Upload 2 CSV files")
 
 files = st.file_uploader(
-    "Upload files in order:\n1️⃣ synthèse CA audio...\n2️⃣ Positionnement...\n3️⃣ Synthèse stats optique...",
+    "Upload files in order:\n1️⃣ Synthèse CA audio Année N\n2️⃣ Positionnement \n3️⃣ Synthèse stats optique Année N",
     type="csv",
     accept_multiple_files=True
 )
@@ -122,10 +134,11 @@ if files and len(files) == 3:
         objectifs_df = pd.read_csv(files[1], encoding="latin1", skiprows=2, sep=";", decimal=",")
         optique_df = pd.read_csv(files[2], encoding="latin1", skiprows=2, sep=";", decimal=",")
 
-        st.write("Preview for store detection:", objectifs_df.head())
-
-        st.write("Audio columns:", audio_df.columns.tolist())
-        st.write("Objectifs columns:", objectifs_df.columns.tolist())
+        #Debug logs
+        #st.write("Preview for store detection:", objectifs_df.head())
+        #st.write("Audio columns:", audio_df.columns.tolist())
+        #st.write("Objectifs columns:", objectifs_df.columns.tolist())
+        #st.write("Optique columns:", optique_df.columns.tolist())
 
         audio_data = extract_audio_ca(audio_df)
         objectifs_data = extract_objectifs(objectifs_df, audio_data["MAGASIN"])
