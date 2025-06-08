@@ -121,10 +121,10 @@ def save_to_excel(df):
     output.seek(0)
     return output
 
-st.title("Upload 2 CSV files")
+st.title("Caroptic Stats")
 
 files = st.file_uploader(
-    "Upload files in order:\n1️⃣ Synthèse CA audio Année N\n2️⃣ Positionnement \n3️⃣ Synthèse stats optique Année N",
+    "1️⃣ Synthèse CA audio Année N  ||   2️⃣ Positionnement   ||   3️⃣ Synthèse stats optique Année N",
     type="csv",
     accept_multiple_files=True
 )
@@ -153,4 +153,4 @@ if files and len(files) == 3:
     except Exception as e:
         st.error(f"Error: {e}")
 else:
-    st.warning("Please upload exactly 2 CSV files.")
+    st.warning("Veuillez déposer les documents demandés dans le bon ordre")
