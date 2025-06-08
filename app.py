@@ -1,8 +1,8 @@
-import streamlit as st
-import pandas as pd
 import unicodedata
-from openpyxl.utils import get_column_letter
 
+import pandas as pd
+import streamlit as st
+from openpyxl.utils import get_column_letter
 
 
 def normalize_colname(col):
@@ -18,7 +18,7 @@ def detect_store_column(df):
 
 def extract_audio_ca(df):
     store_col = detect_store_column(df)
-    df = df[[store_col, "CA Encaissé Audio"]].copy()
+    df = df[[store_col, "CA Généré Audio"]].copy()
     df.columns = ["MAGASIN", "CA Audio"]
     df["CA Audio"] = df["CA Audio"].round().astype(int)
     df = df.iloc[:-1]
@@ -49,6 +49,21 @@ def extract_objectifs(df, reference_stores):
         raise ValueError("Store mismatch between files")
     return df
 
+def extract_optique_stats(df, reference_stores):
+    store_col = detect_store_column(df)
+    df = df[[store_col, "Nb Vente Opt", "Panier Moyen"]].copy()
+    df.rename(columns={store_col: "MAGASIN"}, inplace=True)
+    df["NB devis validés \n/ Panier moyen 450"] = df["Nb Vente Opt"].astype(float).round().astype(int).astype(str) + "/"  + df["Panier Moyen"].astype(float).round().astype(int).astype(str)
+    df = df[["MAGASIN", "NB devis validés \n/ Panier moyen 450"]]
+    df = df.iloc[:-1]  # remove total row
+
+    current = set(df["MAGASIN"].str.lower().str.strip())
+    reference = set(reference_stores.str.lower().str.strip())
+    if current != reference:
+        raise ValueError("Store mismatch between files")
+
+    return df
+
 
 def save_to_excel(df):
     from io import BytesIO
@@ -76,6 +91,11 @@ def save_to_excel(df):
             cell = ws.cell(row=row_idx, column=col_idx, value=value)
             cell.font = Font(size=16)
 
+    # Apply center alignment and wrapping
+    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+        for cell in row:
+            cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
+
     #Adjust row width
     for i, column_cells in enumerate(ws.iter_cols(min_row=2), start=1):
         length = max(len(str(cell.value)) if cell.value is not None else 0 for cell in column_cells)
@@ -92,14 +112,15 @@ def save_to_excel(df):
 st.title("Upload 2 CSV files")
 
 files = st.file_uploader(
-    "Upload the files in this order:\n1️⃣ synthèse CA audio...\n2️⃣ Positionnement_Mois...",
+    "Upload files in order:\n1️⃣ synthèse CA audio...\n2️⃣ Positionnement...\n3️⃣ Synthèse stats optique...",
     type="csv",
     accept_multiple_files=True
 )
-if files and len(files) == 2:
+if files and len(files) == 3:
     try:
         audio_df = pd.read_csv(files[0], encoding="latin1", skiprows=2, sep=";")
         objectifs_df = pd.read_csv(files[1], encoding="latin1", skiprows=2, sep=";", decimal=",")
+        optique_df = pd.read_csv(files[2], encoding="latin1", skiprows=2, sep=";", decimal=",")
 
         st.write("Preview for store detection:", objectifs_df.head())
 
@@ -108,8 +129,10 @@ if files and len(files) == 2:
 
         audio_data = extract_audio_ca(audio_df)
         objectifs_data = extract_objectifs(objectifs_df, audio_data["MAGASIN"])
+        optique_data = extract_optique_stats(optique_df, audio_data["MAGASIN"])
 
-        merged = pd.merge(audio_data, objectifs_data, on="MAGASIN")
+        merged = audio_data.merge(objectifs_data, on="MAGASIN").merge(optique_data, on="MAGASIN")
+
         st.write(merged)
 
         excel_file = save_to_excel(merged)
