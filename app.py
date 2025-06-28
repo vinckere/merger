@@ -51,12 +51,18 @@ def extract_objectifs(df, reference_stores):
 
 def extract_optique_stats(df, reference_stores):
     store_col = detect_store_column(df)
-    df = df[[store_col, "Nb Vente Opt", "Panier Moyen", "% Garantie"]].copy()
+    df = df[[store_col, "Nb Vente Opt", "Panier Moyen", "% Garantie", "% Pack Confort", "PM Pack Confort"]].copy()
 
     df.rename(columns={store_col: "MAGASIN"}, inplace=True)
-    df["NB devis validés \n/ Panier moyen 450"] = df["Nb Vente Opt"].astype(float).round().astype(int).astype(str) + "/"  + df["Panier Moyen"].astype(float).round().astype(int).astype(str)
+    df["NB devis validés \n/ Panier moyen 450"] = df["Nb Vente Opt"].astype(float).round().astype(int).astype(
+        str) + "/" + df["Panier Moyen"].astype(float).round().astype(int).astype(str)
     df["% SOP 45%"] = df["% Garantie"].astype(float).round().astype(int)
-    df = df[["MAGASIN", "NB devis validés \n/ Panier moyen 450", "% SOP 45%"]]
+    df["% Pack Confort"] = df["% Pack Confort"].astype(float).round().astype(int)
+    df["PM Pack Confort"] = df["PM Pack Confort"].astype(float).round().astype(int)
+    df["% Pack Confort / PM Pack Confort"] = df["% Pack Confort"].astype(str) + " / " + df["PM Pack Confort"].astype( str)
+
+    # Final selection
+    df = df[["MAGASIN", "NB devis validés \n/ Panier moyen 450", "% SOP 45%", "% Pack Confort / PM Pack Confort"]]
 
     df = df.iloc[:-1]  # remove total row
 
@@ -135,10 +141,10 @@ if files and len(files) == 3:
         optique_df = pd.read_csv(files[2], encoding="latin1", skiprows=2, sep=";", decimal=",")
 
         #Debug logs
-        #st.write("Preview for store detection:", objectifs_df.head())
-        #st.write("Audio columns:", audio_df.columns.tolist())
-        #st.write("Objectifs columns:", objectifs_df.columns.tolist())
-        #st.write("Optique columns:", optique_df.columns.tolist())
+        st.write("Preview for store detection:", objectifs_df.head())
+        st.write("Audio columns:", audio_df.columns.tolist())
+        st.write("Objectifs columns:", objectifs_df.columns.tolist())
+        st.write("Optique columns:", optique_df.columns.tolist())
 
         audio_data = extract_audio_ca(audio_df)
         objectifs_data = extract_objectifs(objectifs_df, audio_data["MAGASIN"])

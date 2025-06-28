@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="519f7ea7-1703-4130-bdf9-98e13bdd5a9e" name="Changes" comment="Working with Nb ventes / Panier Moyen">
+    <list default="true" id="519f7ea7-1703-4130-bdf9-98e13bdd5a9e" name="Changes" comment="Wording">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
     </list>
@@ -23,18 +23,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "vinckere"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;vinckere&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/vinckere/merger",
-    "accountId": "8ec7edca-95f9-4f9d-97f0-aa63896a2cb5"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/vinckere/merger&quot;,
+    &quot;accountId&quot;: &quot;8ec7edca-95f9-4f9d-97f0-aa63896a2cb5&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
 }</component>
@@ -60,8 +60,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-6a121458b545-JavaScript-PY-251.25410.122" />
-        <option value="bundled-python-sdk-880ecab49056-36ea0e71a18c-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.25410.122" />
+        <option value="bundled-python-sdk-9f8e2b94138c-36ea0e71a18c-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-251.26094.141" />
       </set>
     </attachedChunks>
   </component>
@@ -73,7 +72,9 @@
       <option name="presentableId" value="Default" />
       <updated>1746800103054</updated>
       <workItem from="1746800104100" duration="3273000" />
-      <workItem from="1749303721548" duration="9614000" />
+      <workItem from="1749303721548" duration="11471000" />
+      <workItem from="1749530798470" duration="600000" />
+      <workItem from="1751119837366" duration="354000" />
     </task>
     <task id="LOCAL-00001" summary="Try before serious">
       <option name="closed" value="true" />
@@ -123,7 +124,23 @@
       <option name="project" value="LOCAL" />
       <updated>1749366946959</updated>
     </task>
-    <option name="localTasksCounter" value="7" />
+    <task id="LOCAL-00007" summary="Working with % SOP 45 %">
+      <option name="closed" value="true" />
+      <created>1749368294496</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1749368294496</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Wording">
+      <option name="closed" value="true" />
+      <created>1749368575322</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1749368575322</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -136,6 +153,8 @@
     <MESSAGE value="3 columns merged, and working" />
     <MESSAGE value="Add a bit more style" />
     <MESSAGE value="Working with Nb ventes / Panier Moyen" />
-    <option name="LAST_COMMIT_MESSAGE" value="Working with Nb ventes / Panier Moyen" />
+    <MESSAGE value="Working with % SOP 45 %" />
+    <MESSAGE value="Wording" />
+    <option name="LAST_COMMIT_MESSAGE" value="Wording" />
   </component>
 </project>
