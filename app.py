@@ -74,6 +74,20 @@ def extract_optique_stats(df, reference_stores):
 
     return df
 
+def extract_audio_stats(df, reference_stores):
+    store_col = detect_store_column(df)
+    df = df[[store_col, "% Assur Audio Prev 4 ans"]].copy()
+    df.rename(columns={store_col: "MAGASIN", "% Assur Audio Prev 4 ans": "% Audio Prevoyance 50%"}, inplace=True)
+    df["% Audio Prevoyance 50%"] = df["% Audio Prevoyance 50%"].astype(float).round().astype(int)
+    df = df.iloc[:-1]
+
+    current = set(df["MAGASIN"].str.lower().str.strip())
+    reference = set(reference_stores.str.lower().str.strip())
+    if current != reference:
+        raise ValueError("Store mismatch between files")
+
+    return df
+
 
 def save_to_excel(df):
     from io import BytesIO
@@ -132,6 +146,14 @@ def save_to_excel(df):
                 else:
                     cell.font = Font(size=16, color="0070C0")
 
+    for row in ws.iter_rows(min_row=3, max_row=ws.max_row):
+        for cell in row:
+            if cell.column_letter == "I" and isinstance(cell.value, int):
+                if cell.value < 50:
+                    cell.font = Font(size=16, color="FF0000")
+                else:
+                    cell.font = Font(size=16, color="0070C0")
+
     wb.save(output)
     output.seek(0)
     return output
@@ -139,27 +161,30 @@ def save_to_excel(df):
 st.title("Caroptic Stats")
 
 files = st.file_uploader(
-    "1️⃣ Synthèse CA audio Année N  ||   2️⃣ Positionnement   ||   3️⃣ Synthèse stats optique Année N",
+    "1️⃣ Synthèse CA audio Année N  ||   2️⃣ Positionnement   ||   3️⃣ Synthèse stats optique Année N ||  Synthèse stats audio Année N",
     type="csv",
     accept_multiple_files=True
 )
-if files and len(files) == 3:
+if files and len(files) == 4:
     try:
         audio_df = pd.read_csv(files[0], encoding="latin1", skiprows=2, sep=";")
         objectifs_df = pd.read_csv(files[1], encoding="latin1", skiprows=2, sep=";", decimal=",")
         optique_df = pd.read_csv(files[2], encoding="latin1", skiprows=2, sep=";", decimal=",")
+        audio_ventes_df = pd.read_csv(files[3], encoding="latin1", skiprows=2, sep=";", decimal=",")
 
         #Debug logs
         st.write("Preview for store detection:", objectifs_df.head())
         st.write("Audio columns:", audio_df.columns.tolist())
         st.write("Objectifs columns:", objectifs_df.columns.tolist())
         st.write("Optique columns:", optique_df.columns.tolist())
+        st.write("Audio Ventes columns:", audio_ventes_df.columns.tolist())
 
         audio_data = extract_audio_ca(audio_df)
         objectifs_data = extract_objectifs(objectifs_df, audio_data["MAGASIN"])
         optique_data = extract_optique_stats(optique_df, audio_data["MAGASIN"])
+        audio_ventes_data = extract_audio_stats(audio_ventes_df, audio_data["MAGASIN"])
 
-        merged = audio_data.merge(objectifs_data, on="MAGASIN").merge(optique_data, on="MAGASIN")
+        merged = audio_data.merge(objectifs_data, on="MAGASIN").merge(optique_data, on="MAGASIN").merge(audio_ventes_data, on="MAGASIN")
 
         st.write(merged)
 

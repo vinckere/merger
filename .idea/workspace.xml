@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="519f7ea7-1703-4130-bdf9-98e13bdd5a9e" name="Changes" comment="Make working Pack Confort column">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="519f7ea7-1703-4130-bdf9-98e13bdd5a9e" name="Changes" comment="Make working MDC  + Intemp  66%">
       <change beforePath="$PROJECT_DIR$/app.py" beforeDir="false" afterPath="$PROJECT_DIR$/app.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -148,7 +147,15 @@
       <option name="project" value="LOCAL" />
       <updated>1751121120261</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="Make working MDC  + Intemp  66%">
+      <option name="closed" value="true" />
+      <created>1751121568689</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1751121568689</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -164,6 +171,7 @@
     <MESSAGE value="Working with % SOP 45 %" />
     <MESSAGE value="Wording" />
     <MESSAGE value="Make working Pack Confort column" />
-    <option name="LAST_COMMIT_MESSAGE" value="Make working Pack Confort column" />
+    <MESSAGE value="Make working MDC  + Intemp  66%" />
+    <option name="LAST_COMMIT_MESSAGE" value="Make working MDC  + Intemp  66%" />
   </component>
 </project>
