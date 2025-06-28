@@ -51,7 +51,7 @@ def extract_objectifs(df, reference_stores):
 
 def extract_optique_stats(df, reference_stores):
     store_col = detect_store_column(df)
-    df = df[[store_col, "Nb Vente Opt", "Panier Moyen", "% Garantie", "% Pack Confort", "PM Pack Confort"]].copy()
+    df = df[[store_col, "Nb Vente Opt", "Panier Moyen", "% Garantie", "% Pack Confort", "PM Pack Confort", "% Marque Excl. et Intemp."]].copy()
 
     df.rename(columns={store_col: "MAGASIN"}, inplace=True)
     df["NB devis validés \n/ Panier moyen 450"] = df["Nb Vente Opt"].astype(float).round().astype(int).astype(
@@ -60,9 +60,10 @@ def extract_optique_stats(df, reference_stores):
     df["% Pack Confort"] = df["% Pack Confort"].astype(float).round().astype(int)
     df["PM Pack Confort"] = df["PM Pack Confort"].astype(float).round().astype(int)
     df["% Pack Confort / PM Pack Confort"] = df["% Pack Confort"].astype(str) + " / " + df["PM Pack Confort"].astype( str)
+    df["MDC  + Intemp  66%"] = df["% Marque Excl. et Intemp."].astype(float).round().astype(int)
 
     # Final selection
-    df = df[["MAGASIN", "NB devis validés \n/ Panier moyen 450", "% SOP 45%", "% Pack Confort / PM Pack Confort"]]
+    df = df[["MAGASIN", "NB devis validés \n/ Panier moyen 450", "% SOP 45%", "% Pack Confort / PM Pack Confort", "MDC  + Intemp  66%"]]
 
     df = df.iloc[:-1]  # remove total row
 
@@ -122,6 +123,14 @@ def save_to_excel(df):
                     cell.font = Font(size=16, color="FF0000")  # red
                 else:
                     cell.font = Font(size=16, color="0070C0")  # blue
+
+    for row in ws.iter_rows(min_row=3, max_row=ws.max_row):
+        for cell in row:
+            if cell.column_letter == "H" and isinstance(cell.value, int):
+                if cell.value < 66:
+                    cell.font = Font(size=16, color="FF0000")
+                else:
+                    cell.font = Font(size=16, color="0070C0")
 
     wb.save(output)
     output.seek(0)
