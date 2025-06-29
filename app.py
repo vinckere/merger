@@ -24,6 +24,25 @@ def extract_audio_ca(df):
     df = df.iloc[:-1]
     return df
 
+def extract_audio_ca_n_1(df, reference_stores):
+    store_col = detect_store_column(df)
+    df = df[[store_col, "CA Généré Audio"]].copy()
+
+    df.rename(columns={store_col: "MAGASIN"}, inplace=True)
+    df = df.iloc[:-1]  # Remove total after rename
+
+    df["CA Audio N-1"] = df["CA Généré Audio"].str.replace(",", ".").astype(float).round().astype(int).astype(str)
+    df = df[["MAGASIN", "CA Audio N-1"]]
+
+    current = set(df["MAGASIN"].str.lower().str.strip())
+    reference = set(reference_stores.str.lower().str.strip())
+    if current != reference:
+        raise ValueError("Store mismatch between files")
+
+    return df
+
+
+
 def extract_objectifs(df, reference_stores):
     store_col = detect_store_column(df)
 
@@ -129,6 +148,7 @@ def save_to_excel(df):
     for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
         ws.row_dimensions[row[0].row].height = 28
 
+    # % SOP 45
     for row in ws.iter_rows(min_row=3, max_row=ws.max_row):
         for cell in row:
             # Check if it's the SOP column
@@ -138,6 +158,7 @@ def save_to_excel(df):
                 else:
                     cell.font = Font(size=16, color="0070C0")  # blue
 
+    # MDC + Intemp 66
     for row in ws.iter_rows(min_row=3, max_row=ws.max_row):
         for cell in row:
             if cell.column_letter == "H" and isinstance(cell.value, int):
@@ -146,6 +167,7 @@ def save_to_excel(df):
                 else:
                     cell.font = Font(size=16, color="0070C0")
 
+    # % Audio pRevoyance
     for row in ws.iter_rows(min_row=3, max_row=ws.max_row):
         for cell in row:
             if cell.column_letter == "I" and isinstance(cell.value, int):
@@ -161,16 +183,18 @@ def save_to_excel(df):
 st.title("Caroptic Stats")
 
 files = st.file_uploader(
-    "1️⃣ Synthèse CA audio Année N  ||   2️⃣ Positionnement   ||   3️⃣ Synthèse stats optique Année N ||  Synthèse stats audio Année N",
+    "1️⃣ Synthèse CA audio Année N  ||   2️⃣ Positionnement   ||   3️⃣ Synthèse stats optique Année N || 4 Synthèse stats audio Année N || 5 Synthèse CA Audio Année N-1 || 6 3️⃣ Synthèse stats optique Année N -1",
     type="csv",
     accept_multiple_files=True
 )
-if files and len(files) == 4:
+if files and len(files) == 6:
     try:
         audio_df = pd.read_csv(files[0], encoding="latin1", skiprows=2, sep=";")
         objectifs_df = pd.read_csv(files[1], encoding="latin1", skiprows=2, sep=";", decimal=",")
         optique_df = pd.read_csv(files[2], encoding="latin1", skiprows=2, sep=";", decimal=",")
         audio_ventes_df = pd.read_csv(files[3], encoding="latin1", skiprows=2, sep=";", decimal=",")
+        audio_n_1_df = pd.read_csv(files[4], encoding="latin1", skiprows=2, sep=";", decimal=",")
+        optique_n_1_df = pd.read_csv(files[5], encoding="latin1", skiprows=2, sep=";", decimal=",")
 
         #Debug logs
         st.write("Preview for store detection:", objectifs_df.head())
@@ -178,13 +202,17 @@ if files and len(files) == 4:
         st.write("Objectifs columns:", objectifs_df.columns.tolist())
         st.write("Optique columns:", optique_df.columns.tolist())
         st.write("Audio Ventes columns:", audio_ventes_df.columns.tolist())
+        st.write("Audio N-1 columns:", audio_n_1_df.columns.tolist())
+        st.write("Optique N-1 columns:", optique_n_1_df.columns.tolist())
 
         audio_data = extract_audio_ca(audio_df)
         objectifs_data = extract_objectifs(objectifs_df, audio_data["MAGASIN"])
         optique_data = extract_optique_stats(optique_df, audio_data["MAGASIN"])
         audio_ventes_data = extract_audio_stats(audio_ventes_df, audio_data["MAGASIN"])
+        audio_data_n_1 = extract_audio_ca_n_1(audio_n_1_df, audio_data["MAGASIN"])
+      #  optique_data_n_1 = extract_optique_stats(optique_n_1_df, audio_data["MAGASIN"])
 
-        merged = audio_data.merge(objectifs_data, on="MAGASIN").merge(optique_data, on="MAGASIN").merge(audio_ventes_data, on="MAGASIN")
+        merged = audio_data.merge(objectifs_data, on="MAGASIN").merge(optique_data, on="MAGASIN").merge(audio_ventes_data, on="MAGASIN").merge(audio_data_n_1, on="MAGASIN")
 
         st.write(merged)
 
