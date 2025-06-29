@@ -82,9 +82,28 @@ def extract_optique_stats(df, reference_stores):
     df["MDC  + Intemp  66%"] = df["% Marque Excl. et Intemp."].astype(float).round().astype(int)
 
     # Final selection
-    df = df[["MAGASIN", "NB devis validés \n/ Panier moyen 450", "% SOP 45%", "% Pack Confort / PM Pack Confort", "MDC  + Intemp  66%"]]
+    df = df[["MAGASIN",
+             "Nb Vente Opt",  # keep this
+             "NB devis validés \n/ Panier moyen 450",
+             "% SOP 45%", "% Pack Confort / PM Pack Confort",
+             "MDC  + Intemp  66%"]]
 
     df = df.iloc[:-1]  # remove total row
+
+    current = set(df["MAGASIN"].str.lower().str.strip())
+    reference = set(reference_stores.str.lower().str.strip())
+    if current != reference:
+        raise ValueError("Store mismatch between files")
+
+    return df
+
+def extract_optique_stats_n_1(df, reference_stores):
+    """Extracts only MAGASIN and Nb Vente Opt for N-1 comparison"""
+    store_col = detect_store_column(df)
+    df = df[[store_col, "Nb Vente Opt"]].copy()
+    df.rename(columns={store_col: "MAGASIN"}, inplace=True)
+    df.rename(columns={"Nb Vente Opt": "Nb Vente Opt N-1"}, inplace=True)
+    df = df.iloc[:-1]
 
     current = set(df["MAGASIN"].str.lower().str.strip())
     reference = set(reference_stores.str.lower().str.strip())
@@ -167,7 +186,16 @@ def save_to_excel(df):
                 else:
                     cell.font = Font(size=16, color="0070C0")
 
-    # % Audio pRevoyance
+    # % Audio Prevoyance
+    for row in ws.iter_rows(min_row=3, max_row=ws.max_row):
+        for cell in row:
+            if cell.column_letter == "I" and isinstance(cell.value, int):
+                if cell.value < 50:
+                    cell.font = Font(size=16, color="FF0000")
+                else:
+                    cell.font = Font(size=16, color="0070C0")
+
+    # % Evolution N-1
     for row in ws.iter_rows(min_row=3, max_row=ws.max_row):
         for cell in row:
             if cell.column_letter == "I" and isinstance(cell.value, int):
@@ -210,9 +238,15 @@ if files and len(files) == 6:
         optique_data = extract_optique_stats(optique_df, audio_data["MAGASIN"])
         audio_ventes_data = extract_audio_stats(audio_ventes_df, audio_data["MAGASIN"])
         audio_data_n_1 = extract_audio_ca_n_1(audio_n_1_df, audio_data["MAGASIN"])
-      #  optique_data_n_1 = extract_optique_stats(optique_n_1_df, audio_data["MAGASIN"])
+        optique_data_n_1 = extract_optique_stats_n_1(optique_n_1_df, audio_data["MAGASIN"])
 
-        merged = audio_data.merge(objectifs_data, on="MAGASIN").merge(optique_data, on="MAGASIN").merge(audio_ventes_data, on="MAGASIN").merge(audio_data_n_1, on="MAGASIN")
+        merged = (audio_data.merge(objectifs_data, on="MAGASIN").merge(optique_data, on="MAGASIN").merge(audio_ventes_data, on="MAGASIN").merge(audio_data_n_1, on="MAGASIN")
+                  .merge(optique_data_n_1, on="MAGASIN", suffixes=("", "_N_1")))
+        merged["Evolution N -1"] = (
+                merged["Nb Vente Opt"].astype(float).round().astype(int) -
+                merged["Nb Vente Opt N-1"].astype(float).round().astype(int)
+        )
+        merged.drop(columns=["Nb Vente Opt", "Nb Vente Opt N-1"], inplace=True)
 
         st.write(merged)
 
