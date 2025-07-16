@@ -211,7 +211,7 @@ def save_to_excel(df):
 st.title("Caroptic Stats")
 
 files = st.file_uploader(
-    "1️⃣ Synthèse CA audio Année N  ||   2️⃣ Positionnement   ||   3️⃣ Synthèse stats optique Année N || 4 Synthèse stats audio Année N || 5 Synthèse CA Audio Année N-1 || 6 3️⃣ Synthèse stats optique Année N -1",
+    "1 Synthèse CA audio Année N  ||  2️⃣ Positionnement  ||  3️⃣ Synthèse stats optique Année N  ||  4️⃣ Synthèse stats audio Année N  ||  5️⃣ Synthèse CA Audio Année N-1  ||  6️⃣ Synthèse stats optique Année N -1",
     type="csv",
     accept_multiple_files=True
 )
