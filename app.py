@@ -39,7 +39,14 @@ def extract_audio_ca_n_1(df, reference_stores):
     df.rename(columns={store_col: "MAGASIN"}, inplace=True)
     df = df.iloc[:-1]  # Remove total after rename
 
-    df["CA Audio N-1"] = df["CA Généré Audio"].str.replace(",", ".").astype(float).round().astype(int).astype(str)
+    #df["CA Audio N-1"] = df["CA Généré Audio"].str.replace(",", ".").astype(float).round().astype(int).astype(str)
+    df["CA Audio N-1"] = (
+        df["CA Généré Audio"]
+        .str.replace(",", ".")
+        .astype(float)
+        .round()
+        .astype(int)
+    )
     df = df[["MAGASIN", "CA Audio N-1"]]
 
     current = set(df["MAGASIN"].str.lower().str.strip())
