@@ -39,7 +39,6 @@ def extract_audio_ca_n_1(df, reference_stores):
     df.rename(columns={store_col: "MAGASIN"}, inplace=True)
     df = df.iloc[:-1]  # Remove total after rename
 
-    #df["CA Audio N-1"] = df["CA Généré Audio"].str.replace(",", ".").astype(float).round().astype(int).astype(str)
     df["CA Audio N-1"] = (
         df["CA Généré Audio"]
         .str.replace(",", ".")
@@ -93,14 +92,14 @@ def extract_optique_stats(df, reference_stores):
     df["% SOP 45%"] = df["% Garantie"].astype(float).round().astype(int)
     df["% Pack Confort"] = df["% Pack Confort"].astype(float).round().astype(int)
     df["PM Pack Confort"] = df["PM Pack Confort"].astype(float).round().astype(int)
-    df["% Pack Confort / PM Pack Confort"] = df["% Pack Confort"].astype(str) + " / " + df["PM Pack Confort"].astype( str)
+    df["% Pack Confort \n/ PM Pack Confort"] = df["% Pack Confort"].astype(str) + " / " + df["PM Pack Confort"].astype( str)
     df["MDC  + Intemp  66%"] = df["% Marque Excl. et Intemp."].astype(float).round().astype(int)
 
     # Final selection
     df = df[["MAGASIN",
              "Nb Vente Opt",  # keep this
              "NB devis validés \n/ Panier moyen 450",
-             "% SOP 45%", "% Pack Confort / PM Pack Confort",
+             "% SOP 45%", "% Pack Confort \n/ PM Pack Confort",
              "MDC  + Intemp  66%"]]
 
     df = df.iloc[:-1]  # remove total row
@@ -168,18 +167,21 @@ def save_to_excel(df):
             cell.font = Font(size=16)
 
     # Apply center alignment and wrapping
-    for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
+    for row in ws.iter_rows(min_row=1, max_row=ws.max_row):
         for cell in row:
             cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
 
     #Adjust row width
     for i, column_cells in enumerate(ws.iter_cols(min_row=2), start=1):
-        length = max(len(str(cell.value)) if cell.value is not None else 0 for cell in column_cells)
-        ws.column_dimensions[get_column_letter(i)].width = length + 6
+        col_letter = get_column_letter(i)
+        if col_letter == "A":
+            ws.column_dimensions[col_letter].width = 30
+            continue  # leave MAGASIN auto-sized or padded
+        ws.column_dimensions[col_letter].width = 20
 
-    # Adjust row height
+        # Adjust row height
     for row in ws.iter_rows(min_row=2, max_row=ws.max_row):
-        ws.row_dimensions[row[0].row].height = 28
+        ws.row_dimensions[row[0].row].height = 40
 
     # % SOP 45
     for row in ws.iter_rows(min_row=3, max_row=ws.max_row):
@@ -218,6 +220,16 @@ def save_to_excel(df):
                 else:
                     cell.font = Font(size=16, color="0070C0")
 
+    # MOYENNE Row formatting
+    last_row_idx = ws.max_row
+    for cell in ws[last_row_idx]:
+        cell.font = Font(size=16, bold=True)
+        cell.fill = PatternFill("solid", fgColor="BDD7EE")
+
+    # Update height of first and second line (headers
+    ws.row_dimensions[1].height = 60
+    ws.row_dimensions[2].height = 80
+
     wb.save(output)
     output.seek(0)
     return output
@@ -239,13 +251,13 @@ if files and len(files) == 6:
         optique_n_1_df = pd.read_csv(files[5], encoding="latin1", skiprows=2, sep=";", decimal=",")
 
         #Debug logs
-        st.write("Preview for store detection:", objectifs_df.head())
-        st.write("Audio columns:", audio_df.columns.tolist())
-        st.write("Objectifs columns:", objectifs_df.columns.tolist())
-        st.write("Optique columns:", optique_df.columns.tolist())
-        st.write("Audio Ventes columns:", audio_ventes_df.columns.tolist())
-        st.write("Audio N-1 columns:", audio_n_1_df.columns.tolist())
-        st.write("Optique N-1 columns:", optique_n_1_df.columns.tolist())
+        #st.write("Preview for store detection:", objectifs_df.head())
+        #st.write("Audio columns:", audio_df.columns.tolist())
+        #st.write("Objectifs columns:", objectifs_df.columns.tolist())
+        #st.write("Optique columns:", optique_df.columns.tolist())
+        #st.write("Audio Ventes columns:", audio_ventes_df.columns.tolist())
+        #st.write("Audio N-1 columns:", audio_n_1_df.columns.tolist())
+        #st.write("Optique N-1 columns:", optique_n_1_df.columns.tolist())
 
         audio_data = extract_audio_ca(audio_df)
         objectifs_data = extract_objectifs(objectifs_df, audio_data["MAGASIN"])
@@ -280,7 +292,7 @@ if files and len(files) == 6:
             if "/" in col:
                 average_row[col] = average_slash_column(merged[col])
 
-        average_row["MAGASIN"] = "Moyenne"
+        average_row["MAGASIN"] = "MOYENNE"
         merged = pd.concat([merged, pd.DataFrame([average_row])], ignore_index=True)
 
         # CA Audio column renaming
@@ -294,7 +306,7 @@ if files and len(files) == 6:
             'NB devis validés \n/ Panier moyen 450',
             'Evolution N-1',
             '% SOP 45%',
-            '% Pack Confort / PM Pack Confort',
+            '% Pack Confort \n/ PM Pack Confort',
             'MDC  + Intemp  66%',
             '% Audio Prevoyance 50%',
             'CA Audio généré',
