@@ -140,7 +140,6 @@ def save_to_excel(df):
     from openpyxl import Workbook
     from openpyxl.styles import Font, PatternFill, Alignment
 
-    df = df.rename(columns={"CA Audio": "CA Audio généré "})
     output = BytesIO()
     wb = Workbook()
     ws = wb.active
@@ -251,14 +250,18 @@ if files and len(files) == 6:
 
         merged = (audio_data.merge(objectifs_data, on="MAGASIN").merge(optique_data, on="MAGASIN").merge(audio_ventes_data, on="MAGASIN").merge(audio_data_n_1, on="MAGASIN")
                   .merge(optique_data_n_1, on="MAGASIN", suffixes=("", "_N_1")))
-        merged["Evolution N -1"] = (
+        merged["Evolution N-1"] = (
                 merged["Nb Vente Opt"].astype(float).round().astype(int) -
                 merged["Nb Vente Opt N-1"].astype(float).round().astype(int)
         )
         merged.drop(columns=["Nb Vente Opt", "Nb Vente Opt N-1"], inplace=True)
 
+        # Sort by file 2 (Positionnement)
         merged["MAGASIN"] = pd.Categorical(merged["MAGASIN"], categories=magasin_order, ordered=True)
         merged = merged.sort_values("MAGASIN")
+
+
+        #Add total tow
 
         average_row = merged.select_dtypes(include=[np.number]).mean().round().astype(int).to_dict()
 
@@ -269,7 +272,28 @@ if files and len(files) == 6:
         average_row["MAGASIN"] = "TOTAL"
         merged = pd.concat([merged, pd.DataFrame([average_row])], ignore_index=True)
 
-        st.write(merged)
+        # CA Audio column renaming
+        merged.rename(columns={"CA Audio": "CA Audio généré"}, inplace=True)
+
+        # Reorder columns using CHIFFRES DU... file
+        column_order = [
+            'MAGASIN',
+            'OBJECTIF Mensuel',
+            'CA Mensuel Généré',
+            'NB devis validés \n/ Panier moyen 450',
+            'Evolution N-1',
+            '% SOP 45%',
+            '% Pack Confort / PM Pack Confort',
+            'MDC  + Intemp  66%',
+            '% Audio Prevoyance 50%',
+            'CA Audio généré',
+            'CA Audio N-1'
+        ]
+
+        merged = merged[[col for col in column_order if col in merged.columns]]
+
+        #Debug stuff
+        #st.write(merged)
 
         excel_file = save_to_excel(merged)
         st.download_button("Download Excel", excel_file, "CHIFFRES DU XX AU XX.xlsx")
