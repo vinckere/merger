@@ -1,9 +1,17 @@
 import unicodedata
 
+import numpy as np
 import pandas as pd
 import streamlit as st
+
 from openpyxl.utils import get_column_letter
 
+
+def average_slash_column(col):
+    parts = col.dropna().str.split("/", expand=True).astype(float)
+    avg1 = parts[0].mean().round().astype(int)
+    avg2 = parts[1].mean().round().astype(int)
+    return f"{avg1} / {avg2}"
 
 def normalize_colname(col):
     """Normalize accented characters (e.g. È → é)"""
@@ -251,6 +259,15 @@ if files and len(files) == 6:
 
         merged["MAGASIN"] = pd.Categorical(merged["MAGASIN"], categories=magasin_order, ordered=True)
         merged = merged.sort_values("MAGASIN")
+
+        average_row = merged.select_dtypes(include=[np.number]).mean().round().astype(int).to_dict()
+
+        for col in merged.columns:
+            if "/" in col:
+                average_row[col] = average_slash_column(merged[col])
+
+        average_row["MAGASIN"] = "TOTAL"
+        merged = pd.concat([merged, pd.DataFrame([average_row])], ignore_index=True)
 
         st.write(merged)
 
