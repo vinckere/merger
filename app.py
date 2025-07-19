@@ -235,6 +235,7 @@ if files and len(files) == 6:
 
         audio_data = extract_audio_ca(audio_df)
         objectifs_data = extract_objectifs(objectifs_df, audio_data["MAGASIN"])
+        magasin_order = objectifs_data["MAGASIN"].tolist()
         optique_data = extract_optique_stats(optique_df, audio_data["MAGASIN"])
         audio_ventes_data = extract_audio_stats(audio_ventes_df, audio_data["MAGASIN"])
         audio_data_n_1 = extract_audio_ca_n_1(audio_n_1_df, audio_data["MAGASIN"])
@@ -247,6 +248,9 @@ if files and len(files) == 6:
                 merged["Nb Vente Opt N-1"].astype(float).round().astype(int)
         )
         merged.drop(columns=["Nb Vente Opt", "Nb Vente Opt N-1"], inplace=True)
+
+        merged["MAGASIN"] = pd.Categorical(merged["MAGASIN"], categories=magasin_order, ordered=True)
+        merged = merged.sort_values("MAGASIN")
 
         st.write(merged)
 
