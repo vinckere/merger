@@ -261,15 +261,19 @@ if files and len(files) == 6:
         merged = merged.sort_values("MAGASIN")
 
 
-        #Add total tow
-
-        average_row = merged.select_dtypes(include=[np.number]).mean().round().astype(int).to_dict()
+        #Add average row, except for Evolution N-1 which should be the sum
+        average_row = {}
+        for col in merged.select_dtypes(include=[np.number]).columns:
+            if col == "Evolution N-1":
+                average_row[col] = merged[col].sum()
+            else:
+                average_row[col] = merged[col].mean().round().astype(int)
 
         for col in merged.columns:
             if "/" in col:
                 average_row[col] = average_slash_column(merged[col])
 
-        average_row["MAGASIN"] = "TOTAL"
+        average_row["MAGASIN"] = "Moyenne"
         merged = pd.concat([merged, pd.DataFrame([average_row])], ignore_index=True)
 
         # CA Audio column renaming
